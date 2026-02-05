@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 public class Journal
 {
     public string filename = "myJournal.txt";
@@ -10,12 +9,11 @@ public class Journal
     {
         Entry newEntry = new Entry();
         newEntry._prompt = Prompt.RandomPrompt("promptlist.txt");
-        newEntry.TextEntry();
         _entries.Add(newEntry);
 
         using (StreamWriter outputFile = new StreamWriter(filename))
         {
-            outputFile.WriteLine($"{newEntry.currentDateTime}");
+            outputFile.WriteLine($"{newEntry._currentDateTime}");
             outputFile.WriteLine($"{newEntry._prompt}");
             outputFile.WriteLine($"{newEntry._response}");
             outputFile.WriteLine();
@@ -32,7 +30,7 @@ public class Journal
             foreach (Entry entry in _entries)
             {
                 // Escape commas and quotes in text for proper CSV format
-                string date = entry.currentDateTime.ToString();
+                string date = entry._currentDateTime.ToString();
                 string prompt = $"\"{entry._prompt.Replace("\"", "\"\"")}\"";
                 string response = $"\"{entry._response.Replace("\"", "\"\"")}\"";
                 
