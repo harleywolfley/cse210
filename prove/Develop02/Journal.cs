@@ -1,45 +1,53 @@
 using System;
+using System.ComponentModel.Design;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 public class Journal
 {
-    public string filename = "myJournal.txt";
-    public string csvFilename = "myJournal.csv";
     public List<Entry> _entries = new List<Entry>();
+
     public void Write()
     {
         Entry newEntry = new Entry();
-        newEntry._prompt = Prompt.RandomPrompt("promptlist.txt");
+        newEntry.PromptForResponse();
         _entries.Add(newEntry);
 
-        using (StreamWriter outputFile = new StreamWriter(filename))
-        {
-            outputFile.WriteLine($"{newEntry._currentDateTime}");
-            outputFile.WriteLine($"{newEntry._prompt}");
-            outputFile.WriteLine($"{newEntry._response}");
-            outputFile.WriteLine();
-        }
     }
-    public void ExportToCSV()
+    public void Load()
     {
-        using (StreamWriter outputFile = new StreamWriter(csvFilename))
+        Console.WriteLine($"Where would you like to load from?");
+        string filename = Console.ReadLine();
+        string contents = File.ReadAllText(filename);
+        string[] entriesFromFile = contents.Split("\n");
+        foreach (string entryFromFile in entriesFromFile)
         {
-            // Write header row
-            outputFile.WriteLine("Date,Prompt,Response");
-            
-            // Write each entry
-            foreach (Entry entry in _entries)
+            if (entryFromFile == "")
             {
-                // Escape commas and quotes in text for proper CSV format
-                string date = entry._currentDateTime.ToString();
-                string prompt = $"\"{entry._prompt.Replace("\"", "\"\"")}\"";
-                string response = $"\"{entry._response.Replace("\"", "\"\"")}\"";
-                
-                outputFile.WriteLine($"{date},{prompt},{response}");
+                continue;
             }
+            _entries.Append(Entry.Deserialize(entryFromFile));
         }
-        
-        Console.WriteLine($"Entries exported to {csvFilename}");
     }
+    public void Display()
+    {
+        foreach (Entry entry in _entries)
+        {
+            entry.Display();
+        }
+    }
+    public void Save()
+    {
+        Console.WriteLine($"Where would you like to save to?");
+        string filename = Console.ReadLine();
+
+        string contents = "";
+        foreach (Entry entry in _entries)
+        {
+            contents += entry.SerializeToText() + '\n';
+        } 
+        File.WriteAllText(filename, contents);
+    }
+   
     public void Edit()
     {
         for (int entryAmount = 0; entryAmount < _entries.Count; entryAmount++)
